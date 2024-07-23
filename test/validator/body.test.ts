@@ -3,9 +3,12 @@ import { Elysia, t } from '../../src'
 import { describe, expect, it } from 'bun:test'
 import { post } from '../utils'
 
-describe('Body Validator', () => {
+describe.each([
+	{aot: true},
+	{aot: false},
+])('Body Validator', (options) => {
 	it('validate single', async () => {
-		const app = new Elysia().post('/', ({ body: { name } }) => name, {
+		const app = new Elysia(options).post('/', ({ body: { name } }) => name, {
 			body: t.Object({
 				name: t.String()
 			})
@@ -21,7 +24,7 @@ describe('Body Validator', () => {
 	})
 
 	it('validate multiple', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -45,7 +48,7 @@ describe('Body Validator', () => {
 	})
 
 	it('parse without reference', async () => {
-		const app = new Elysia().post('/', () => '', {
+		const app = new Elysia(options).post('/', () => '', {
 			body: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -64,7 +67,7 @@ describe('Body Validator', () => {
 	})
 
 	it('validate optional', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -86,7 +89,7 @@ describe('Body Validator', () => {
 	})
 
 	it('parse single numeric', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -113,7 +116,7 @@ describe('Body Validator', () => {
 	})
 
 	it('parse multiple numeric', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -141,7 +144,7 @@ describe('Body Validator', () => {
 	})
 
 	it('validate empty body', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.Union([
 				t.Undefined(),
 				t.Object({
@@ -162,7 +165,7 @@ describe('Body Validator', () => {
 	})
 
 	it('validate empty body with partial', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.Union([
 				t.Undefined(),
 				t.Object({
@@ -185,7 +188,7 @@ describe('Body Validator', () => {
 	})
 
 	it('normalize by default', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.Object({
 				name: t.String()
 			})
@@ -227,7 +230,7 @@ describe('Body Validator', () => {
 	})
 
 	it('validate maybe empty body', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.MaybeEmpty(
 				t.Object({
 					name: t.String(),
@@ -247,7 +250,7 @@ describe('Body Validator', () => {
 	})
 
 	it('validate record', async () => {
-		const app = new Elysia().post('/', ({ body: { name } }) => name, {
+		const app = new Elysia(options).post('/', ({ body: { name } }) => name, {
 			body: t.Record(t.String(), t.String())
 		})
 		const res = await app.handle(
@@ -261,7 +264,7 @@ describe('Body Validator', () => {
 	})
 
 	it('validate record inside object', async () => {
-		const app = new Elysia().post(
+		const app = new Elysia(options).post(
 			'/',
 			({ body: { name, friends } }) =>
 				`${name} ~ ${Object.keys(friends).join(' + ')}`,
@@ -287,7 +290,7 @@ describe('Body Validator', () => {
 	})
 
 	it('validate optional primitive', async () => {
-		const app = new Elysia().post('/', ({ body }) => body ?? 'sucrose', {
+		const app = new Elysia(options).post('/', ({ body }) => body ?? 'sucrose', {
 			body: t.Optional(t.String())
 		})
 
@@ -316,7 +319,7 @@ describe('Body Validator', () => {
 	})
 
 	it('validate optional object', async () => {
-		const app = new Elysia().post(
+		const app = new Elysia(options).post(
 			'/',
 			({ body }) => body?.name ?? 'sucrose',
 			{
@@ -349,7 +352,7 @@ describe('Body Validator', () => {
 	})
 
 	it('create default object body', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.Object({
 				username: t.String(),
 				password: t.String(),
@@ -377,7 +380,7 @@ describe('Body Validator', () => {
 	})
 
 	it('create default string body', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.String({ default: 'hifumi_daisuki' })
 		})
 
@@ -387,7 +390,7 @@ describe('Body Validator', () => {
 	})
 
 	it('create default boolean body', async () => {
-		const app = new Elysia().post('/', ({ body }) => typeof body, {
+		const app = new Elysia(options).post('/', ({ body }) => typeof body, {
 			body: t.Boolean({ default: true })
 		})
 
@@ -397,7 +400,7 @@ describe('Body Validator', () => {
 	})
 
 	it('create default number body', async () => {
-		const app = new Elysia().post('/', ({ body }) => typeof body, {
+		const app = new Elysia(options).post('/', ({ body }) => typeof body, {
 			body: t.Number({ default: 1 })
 		})
 
@@ -407,7 +410,7 @@ describe('Body Validator', () => {
 	})
 
 	it('create default numeric body', async () => {
-		const app = new Elysia().post('/', ({ body }) => typeof body, {
+		const app = new Elysia(options).post('/', ({ body }) => typeof body, {
 			body: t.Numeric({ default: 1 })
 		})
 
@@ -417,7 +420,7 @@ describe('Body Validator', () => {
 	})
 
 	it("don't coerce number to numeric", async () => {
-		const app = new Elysia().post('/', ({ body }) => typeof body, {
+		const app = new Elysia(options).post('/', ({ body }) => typeof body, {
 			body: t.Number()
 		})
 
@@ -435,7 +438,7 @@ describe('Body Validator', () => {
 	})
 
 	it("don't coerce number object to numeric", async () => {
-		const app = new Elysia().post('/', ({ body: { id } }) => typeof id, {
+		const app = new Elysia(options).post('/', ({ body: { id } }) => typeof id, {
 			body: t.Object({
 				id: t.Number()
 			})
@@ -451,7 +454,7 @@ describe('Body Validator', () => {
 	})
 
 	it("don't coerce string to boolean", async () => {
-		const app = new Elysia().post('/', ({ body }) => typeof body, {
+		const app = new Elysia(options).post('/', ({ body }) => typeof body, {
 			body: t.Number()
 		})
 
@@ -469,7 +472,7 @@ describe('Body Validator', () => {
 	})
 
 	it("don't coerce string object to boolean", async () => {
-		const app = new Elysia().post('/', ({ body: { id } }) => typeof id, {
+		const app = new Elysia(options).post('/', ({ body: { id } }) => typeof id, {
 			body: t.Object({
 				id: t.Number()
 			})
@@ -485,7 +488,7 @@ describe('Body Validator', () => {
 	})
 
 	it('handle optional at root', async () => {
-		const app = new Elysia().post('/', ({ body }) => body, {
+		const app = new Elysia(options).post('/', ({ body }) => body, {
 			body: t.Optional(
 				t.Object({
 					id: t.Numeric()

@@ -3,9 +3,12 @@ import { Context, Elysia, t } from '../../src'
 import { describe, expect, it } from 'bun:test'
 import { req } from '../utils'
 
-describe('Query Validator', () => {
+describe.each([
+	{aot: true},
+	{aot: false},
+])('Query Validator', (options) => {
 	it('validate single', async () => {
-		const app = new Elysia().get('/', ({ query: { name } }) => name, {
+		const app = new Elysia(options).get('/', ({ query: { name } }) => name, {
 			query: t.Object({
 				name: t.String()
 			})
@@ -17,7 +20,7 @@ describe('Query Validator', () => {
 	})
 
 	it('validate with hyphen in key', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			({ query }) => query['character-name'],
 			{
@@ -33,7 +36,7 @@ describe('Query Validator', () => {
 	})
 
 	it('validate with dot in key', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			({ query }) => query['character.name'],
 			{
@@ -49,7 +52,7 @@ describe('Query Validator', () => {
 	})
 
 	it('validate multiple', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -69,7 +72,7 @@ describe('Query Validator', () => {
 	})
 
 	it('parse without reference', async () => {
-		const app = new Elysia().get('/', () => '', {
+		const app = new Elysia(options).get('/', () => '', {
 			query: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -84,7 +87,7 @@ describe('Query Validator', () => {
 	})
 
 	it('validate optional', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -101,7 +104,7 @@ describe('Query Validator', () => {
 	})
 
 	it('parse single numeric', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -120,7 +123,7 @@ describe('Query Validator', () => {
 	})
 
 	it('parse multiple numeric', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -143,7 +146,7 @@ describe('Query Validator', () => {
 	})
 
 	it('validate partial', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Partial(
 				t.Object({
 					name: t.String(),
@@ -159,7 +162,7 @@ describe('Query Validator', () => {
 	})
 
 	it('parse numeric with partial', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Partial(
 				t.Object({
 					name: t.String(),
@@ -177,7 +180,7 @@ describe('Query Validator', () => {
 	})
 
 	it('parse boolean string', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				param1: t.BooleanString()
 			})
@@ -189,7 +192,7 @@ describe('Query Validator', () => {
 	})
 
 	it('parse optional boolean string', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				param1: t.Optional(t.BooleanString({ default: true }))
 			})
@@ -201,7 +204,7 @@ describe('Query Validator', () => {
 	})
 
 	it('validate optional object', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			({ query }) => query?.name ?? 'sucrose',
 			{
@@ -231,7 +234,7 @@ describe('Query Validator', () => {
 	})
 
 	it('create default string query', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				name: t.String(),
 				faction: t.String({ default: 'tea_party' })
@@ -249,7 +252,7 @@ describe('Query Validator', () => {
 	})
 
 	it('create default number query', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				name: t.String(),
 				rank: t.Number({ default: 1 })
@@ -273,7 +276,7 @@ describe('Query Validator', () => {
 			}
 		}
 
-		const app = new Elysia()
+		const app = new Elysia(options)
 			.derive((ctx) => {
 				const { name } = ctx.params
 
@@ -305,7 +308,7 @@ describe('Query Validator', () => {
 		params.append('keys', '1')
 		params.append('keys', '2')
 
-		const response = await new Elysia()
+		const response = await new Elysia(options)
 			.get('/', ({ query }) => query, {
 				query: t.Object({
 					keys: t.Array(t.String())
@@ -318,7 +321,7 @@ describe('Query Validator', () => {
 	})
 
 	it('parse query object', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				role: t.Optional(
 					t.Array(
@@ -347,7 +350,7 @@ describe('Query Validator', () => {
 	})
 
 	it('parse optional query object', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Optional(
 				t.Object({
 					role: t.Optional(
@@ -382,7 +385,7 @@ describe('Query Validator', () => {
 		params.append('keys', JSON.stringify({ a: 'hello' }))
 		params.append('keys', JSON.stringify({ a: 'hi' }))
 
-		const response = await new Elysia()
+		const response = await new Elysia(options)
 			.get('/', ({ query }) => query, {
 				query: t.Object({
 					keys: t.Array(
@@ -405,7 +408,7 @@ describe('Query Validator', () => {
 		params.append('keys', JSON.stringify({ a: 'hello' }))
 		params.append('keys', JSON.stringify({ a: 'hi' }))
 
-		const response = await new Elysia()
+		const response = await new Elysia(options)
 			.get('/', ({ query }) => query, {
 				query: t.Optional(
 					t.Object({
@@ -430,7 +433,7 @@ describe('Query Validator', () => {
 		params.append('keys', JSON.stringify({ a: 'hello' }))
 		params.append('keys', JSON.stringify({ a: 'hi' }))
 
-		const response = await new Elysia()
+		const response = await new Elysia(options)
 			.get('/', ({ query }) => query, {
 				query: t.Optional(
 					t.Object({
@@ -455,7 +458,7 @@ describe('Query Validator', () => {
 	// it('parse query array without schema', async () => {
 	// 	let value: string[] | undefined
 
-	// 	const response = await new Elysia()
+	// 	const response = await new Elysia(options)
 	// 		.get('/', ({ query: { keys } }) => value = keys)
 	// 		.handle(new Request(`http://localhost/?id=1&id=2`))
 	// 		.then((res) => res.json())
@@ -464,7 +467,7 @@ describe('Query Validator', () => {
 	// })
 
 	it("don't parse query object without schema", async () => {
-		const app = new Elysia().get('/', ({ query: { role } }) => role)
+		const app = new Elysia(options).get('/', ({ query: { role } }) => role)
 
 		const response = await app
 			.handle(req(`/?role=${JSON.stringify({ name: 'hello' })}`))
@@ -474,7 +477,7 @@ describe('Query Validator', () => {
 	})
 
 	it('parse union primitive and object', async () => {
-		const app = new Elysia().get('/', ({ query: { ids } }) => ids, {
+		const app = new Elysia(options).get('/', ({ query: { ids } }) => ids, {
 			query: t.Object({
 				ids: t.Union([
 					t.Array(
@@ -493,7 +496,7 @@ describe('Query Validator', () => {
 	})
 
 	it('coerce number object to numeric', async () => {
-		const app = new Elysia().get('/', ({ query: { id } }) => typeof id, {
+		const app = new Elysia(options).get('/', ({ query: { id } }) => typeof id, {
 			query: t.Object({
 				id: t.Number()
 			})
@@ -505,7 +508,7 @@ describe('Query Validator', () => {
 	})
 
 	it('coerce string object to boolean', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			({ query: { isAdmin } }) => typeof isAdmin,
 			{
@@ -525,7 +528,7 @@ describe('Query Validator', () => {
 	it("don't parse object automatically unless explicitly specified", async () => {
 		let value: string | undefined
 
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			({ query: { pagination } }) => (value = pagination as string)
 		)
@@ -540,7 +543,7 @@ describe('Query Validator', () => {
 	})
 
 	it('handle object array in single query', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				pagination: t.Array(
 					t.Object({
@@ -565,7 +568,7 @@ describe('Query Validator', () => {
 	})
 
 	it('handle merge object to array in multiple query', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				pagination: t.Array(
 					t.Object({
@@ -593,7 +596,7 @@ describe('Query Validator', () => {
 	})
 
 	it('don\t coerce number in nested object', async () => {
-		const app = new Elysia().get('/', ({ query: { user } }) => user, {
+		const app = new Elysia(options).get('/', ({ query: { user } }) => user, {
 			query: t.Object({
 				user: t.Object({
 					id: t.Number(),
@@ -615,7 +618,7 @@ describe('Query Validator', () => {
 	})
 
 	it('handle optional at root', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Optional(
 				t.Object({
 					id: t.Numeric()
@@ -632,19 +635,19 @@ describe('Query Validator', () => {
 	})
 
 	it('parse query array in multiple location correctly', async () => {
-		const app = new Elysia().get('/', ({ query }) => query, {
+		const app = new Elysia(options).get('/', ({ query }) => query, {
 			query: t.Object({
 				leading: t.String(),
 				arr: t.Array(t.String()),
 				trailing: t.String()
 			})
 		})
-		
+
 		// console.log(app.routes[0].composed?.toString())
-		
+
 		const response = await app.handle(req('/?leading=foo&arr=bar&arr=baz&trailing=qux&arr=xd'))
 			.then((x) => x.json())
-			
+
 		expect(response).toEqual({
 			leading: 'foo',
 			arr: ['bar', 'baz', 'xd'],

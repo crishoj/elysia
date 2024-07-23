@@ -4,9 +4,12 @@ import { describe, expect, it } from 'bun:test'
 import { req } from '../utils'
 import { Get } from '@sinclair/typebox/build/cjs/type/registry/type'
 
-describe('Header Validator', () => {
+describe.each([
+	{aot: true},
+	{aot: false},
+])('Header Validator', (options) => {
 	it('validate single', async () => {
-		const app = new Elysia().get('/', ({ headers: { name } }) => name, {
+		const app = new Elysia(options).get('/', ({ headers: { name } }) => name, {
 			headers: t.Object({
 				name: t.String()
 			})
@@ -24,7 +27,7 @@ describe('Header Validator', () => {
 	})
 
 	it('validate multiple', async () => {
-		const app = new Elysia().get('/', ({ headers }) => headers, {
+		const app = new Elysia(options).get('/', ({ headers }) => headers, {
 			headers: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -50,7 +53,7 @@ describe('Header Validator', () => {
 	})
 
 	it('parse without reference', async () => {
-		const app = new Elysia().get('/', () => '', {
+		const app = new Elysia(options).get('/', () => '', {
 			headers: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -71,7 +74,7 @@ describe('Header Validator', () => {
 	})
 
 	it('validate optional', async () => {
-		const app = new Elysia().get('/', ({ headers }) => headers, {
+		const app = new Elysia(options).get('/', ({ headers }) => headers, {
 			headers: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -95,7 +98,7 @@ describe('Header Validator', () => {
 	})
 
 	it('parse single numeric', async () => {
-		const app = new Elysia().get('/', ({ headers }) => headers, {
+		const app = new Elysia(options).get('/', ({ headers }) => headers, {
 			headers: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -122,7 +125,7 @@ describe('Header Validator', () => {
 	})
 
 	it('parse multiple numeric', async () => {
-		const app = new Elysia().get('/', ({ headers }) => headers, {
+		const app = new Elysia(options).get('/', ({ headers }) => headers, {
 			headers: t.Object({
 				name: t.String(),
 				job: t.String(),
@@ -152,7 +155,7 @@ describe('Header Validator', () => {
 	})
 
 	it('validate partial', async () => {
-		const app = new Elysia().get('/', ({ headers }) => headers, {
+		const app = new Elysia(options).get('/', ({ headers }) => headers, {
 			headers: t.Partial(
 				t.Object({
 					name: t.String(),
@@ -168,7 +171,7 @@ describe('Header Validator', () => {
 	})
 
 	it('validate numeric with partial', async () => {
-		const app = new Elysia().get('/', ({ headers }) => headers, {
+		const app = new Elysia(options).get('/', ({ headers }) => headers, {
 			headers: t.Partial(
 				t.Object({
 					name: t.String(),
@@ -186,7 +189,7 @@ describe('Header Validator', () => {
 	})
 
 	it('validate optional object', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			({ headers }) => headers?.name ?? 'sucrose',
 			{
@@ -222,7 +225,7 @@ describe('Header Validator', () => {
 	})
 
 	it('create default string params', async () => {
-		const app = new Elysia().get('/', ({ headers }) => headers, {
+		const app = new Elysia(options).get('/', ({ headers }) => headers, {
 			headers: t.Object({
 				name: t.String(),
 				faction: t.String({ default: 'tea_party' })
@@ -246,7 +249,7 @@ describe('Header Validator', () => {
 	})
 
 	it('create default number params', async () => {
-		const app = new Elysia().get('/', ({ headers }) => headers, {
+		const app = new Elysia(options).get('/', ({ headers }) => headers, {
 			headers: t.Object({
 				name: t.String(),
 				rank: t.Number({ default: 1 })
@@ -270,7 +273,7 @@ describe('Header Validator', () => {
 	})
 
 	it('coerce number object to numeric', async () => {
-		const app = new Elysia().get('/', ({ headers: { id } }) => typeof id, {
+		const app = new Elysia(options).get('/', ({ headers: { id } }) => typeof id, {
 			headers: t.Object({
 				id: t.Number()
 			})
@@ -290,7 +293,7 @@ describe('Header Validator', () => {
 	})
 
 	it('coerce string to boolean', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			({ headers }) => typeof headers['is-admin'],
 			{
@@ -314,7 +317,7 @@ describe('Header Validator', () => {
 	})
 
 	it('handle optional at root', async () => {
-		const app = new Elysia().get('/', ({ headers }) => headers, {
+		const app = new Elysia(options).get('/', ({ headers }) => headers, {
 			headers: t.Optional(
 				t.Object({
 					id: t.Numeric()

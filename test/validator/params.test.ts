@@ -3,9 +3,13 @@ import { Elysia, t } from '../../src'
 import { describe, expect, it } from 'bun:test'
 import { req } from '../utils'
 
-describe('Params Validator', () => {
+describe.each([
+	{aot: true},
+	{aot: false},
+])('Params Validator', (options) => {
+
 	it('parse params without validator', async () => {
-		const app = new Elysia().get('/id/:id', ({ params: { id } }) => id)
+		const app = new Elysia(options).get('/id/:id', ({ params: { id } }) => id)
 		const res = await app.handle(req('/id/617'))
 
 		expect(await res.text()).toBe('617')
@@ -13,7 +17,7 @@ describe('Params Validator', () => {
 	})
 
 	it('validate single', async () => {
-		const app = new Elysia().get('/id/:id', ({ params: { id } }) => id, {
+		const app = new Elysia(options).get('/id/:id', ({ params: { id } }) => id, {
 			params: t.Object({
 				id: t.String()
 			})
@@ -25,7 +29,7 @@ describe('Params Validator', () => {
 	})
 
 	it('validate multiple', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/id/:id/name/:name',
 			({ params }) => params,
 			{
@@ -45,7 +49,7 @@ describe('Params Validator', () => {
 	})
 
 	it('parse without reference', async () => {
-		const app = new Elysia().get('/id/:id', () => '', {
+		const app = new Elysia(options).get('/id/:id', () => '', {
 			params: t.Object({
 				id: t.String()
 			})
@@ -56,7 +60,7 @@ describe('Params Validator', () => {
 	})
 
 	it('parse single numeric', async () => {
-		const app = new Elysia().get('/id/:id', ({ params }) => params, {
+		const app = new Elysia(options).get('/id/:id', ({ params }) => params, {
 			params: t.Object({
 				id: t.Numeric()
 			})
@@ -70,7 +74,7 @@ describe('Params Validator', () => {
 	})
 
 	it('parse multiple numeric', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/id/:id/chapter/:chapterId',
 			({ params }) => params,
 			{
@@ -90,7 +94,7 @@ describe('Params Validator', () => {
 	})
 
 	it('create default string params', async () => {
-		const app = new Elysia().get('/:name', ({ params }) => params, {
+		const app = new Elysia(options).get('/:name', ({ params }) => params, {
 			params: t.Object({
 				name: t.String(),
 				faction: t.String({ default: 'tea_party' })
@@ -106,7 +110,7 @@ describe('Params Validator', () => {
 	})
 
 	it('create default number params', async () => {
-		const app = new Elysia().get('/:name', ({ params }) => params, {
+		const app = new Elysia(options).get('/:name', ({ params }) => params, {
 			params: t.Object({
 				name: t.String(),
 				rank: t.Number({ default: 1 })
@@ -122,7 +126,7 @@ describe('Params Validator', () => {
 	})
 
 	it('coerce number object to numeric', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/id/:id',
 			({ params: { id } }) => typeof id,
 			{
@@ -138,7 +142,7 @@ describe('Params Validator', () => {
 	})
 
 	it('coerce string object to boolean', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/is-admin/:value',
 			({ params: { value } }) => typeof value,
 			{
@@ -157,7 +161,7 @@ describe('Params Validator', () => {
 
 	it('create default value on optional params', () => {
 		it('parse multiple optional params', async () => {
-			const app = new Elysia().get(
+			const app = new Elysia(options).get(
 				'/name/:last?/:first?',
 				({ params: { first, last } }) => `${last}/${first}`,
 				{

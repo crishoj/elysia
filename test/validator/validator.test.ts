@@ -3,9 +3,12 @@ import { Elysia, t } from '../../src'
 import { describe, expect, it } from 'bun:test'
 import { post, req } from '../utils'
 
-describe('Validator Additional Case', () => {
+describe.each([
+	{aot: true},
+	{aot: false},
+])('Validator Additional Case', (options) => {
 	it('validate beforeHandle', async () => {
-		const app = new Elysia()
+		const app = new Elysia(options)
 			.get('/', () => 'Mutsuki need correction 💢💢💢', {
 				beforeHandle: () => 'Mutsuki need correction 💢💢💢',
 				response: t.String()
@@ -27,7 +30,7 @@ describe('Validator Additional Case', () => {
 	})
 
 	it('validate afterHandle', async () => {
-		const app = new Elysia()
+		const app = new Elysia(options)
 			.get('/', () => 'Mutsuki need correction 💢💢💢', {
 				afterHandle: () => 'Mutsuki need correction 💢💢💢',
 				response: t.String()
@@ -47,7 +50,7 @@ describe('Validator Additional Case', () => {
 	})
 
 	it('validate beforeHandle with afterHandle', async () => {
-		const app = new Elysia()
+		const app = new Elysia(options)
 			.get('/', () => 'Mutsuki need correction 💢💢💢', {
 				beforeHandle() {},
 				afterHandle() {
@@ -71,7 +74,7 @@ describe('Validator Additional Case', () => {
 	})
 
 	it('handle guard hook', async () => {
-		const app = new Elysia().guard(
+		const app = new Elysia(options).guard(
 			{
 				query: t.Object({
 					name: t.String()

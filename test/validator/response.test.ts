@@ -3,9 +3,12 @@ import { Elysia, error, t } from '../../src'
 import { describe, expect, it } from 'bun:test'
 import { post, req, upload } from '../utils'
 
-describe('Response Validator', () => {
+describe.each([
+	{aot: true},
+	{aot: false},
+])('Response Validator', (options) => {
 	it('validate primitive', async () => {
-		const app = new Elysia().get('/', () => 'sucrose', {
+		const app = new Elysia(options).get('/', () => 'sucrose', {
 			response: t.String()
 		})
 		const res = await app.handle(req('/'))
@@ -15,7 +18,7 @@ describe('Response Validator', () => {
 	})
 
 	it('validate number', async () => {
-		const app = new Elysia().get('/', () => 1, {
+		const app = new Elysia(options).get('/', () => 1, {
 			response: t.Number()
 		})
 		const res = await app.handle(req('/'))
@@ -25,7 +28,7 @@ describe('Response Validator', () => {
 	})
 
 	it('validate boolean', async () => {
-		const app = new Elysia().get('/', () => true, {
+		const app = new Elysia(options).get('/', () => true, {
 			response: t.Boolean()
 		})
 		const res = await app.handle(req('/'))
@@ -35,7 +38,7 @@ describe('Response Validator', () => {
 	})
 
 	it('validate literal', async () => {
-		const app = new Elysia().get('/', () => 'A' as const, {
+		const app = new Elysia(options).get('/', () => 'A' as const, {
 			response: t.Literal('A')
 		})
 		const res = await app.handle(req('/'))
@@ -45,7 +48,7 @@ describe('Response Validator', () => {
 	})
 
 	it('validate single', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			() => ({
 				name: 'sucrose'
@@ -63,7 +66,7 @@ describe('Response Validator', () => {
 	})
 
 	it('validate multiple', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			() => ({
 				name: 'sucrose',
@@ -89,7 +92,7 @@ describe('Response Validator', () => {
 	})
 
 	it('parse without reference', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			() => ({
 				name: 'sucrose',
@@ -110,7 +113,7 @@ describe('Response Validator', () => {
 	})
 
 	it('validate optional', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			() => ({
 				name: 'sucrose',
@@ -134,7 +137,7 @@ describe('Response Validator', () => {
 	})
 
 	it('allow undefined', async () => {
-		const app = new Elysia().get('/', () => {}, {
+		const app = new Elysia(options).get('/', () => {}, {
 			body: t.Union([
 				t.Undefined(),
 				t.Object({
@@ -151,7 +154,7 @@ describe('Response Validator', () => {
 	})
 
 	it('normalize by default', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			() => ({
 				name: 'sucrose',
@@ -193,7 +196,7 @@ describe('Response Validator', () => {
 	})
 
 	it('handle File', async () => {
-		const app = new Elysia().post('/', ({ body: { file } }) => file.size, {
+		const app = new Elysia(options).post('/', ({ body: { file } }) => file.size, {
 			body: t.Object({
 				file: t.File()
 			})
@@ -211,7 +214,7 @@ describe('Response Validator', () => {
 	})
 
 	it('convert File to Files automatically', async () => {
-		const app = new Elysia().post(
+		const app = new Elysia(options).post(
 			'/',
 			({ body: { files } }) => Array.isArray(files),
 			{
@@ -243,7 +246,7 @@ describe('Response Validator', () => {
 	})
 
 	it('validate response per status', async () => {
-		const app = new Elysia().post(
+		const app = new Elysia(options).post(
 			'/',
 			({ set, body: { status, response } }) => {
 				set.status = status
@@ -295,7 +298,7 @@ describe('Response Validator', () => {
 	})
 
 	it('validate response per status with error()', async () => {
-		const app = new Elysia().get('/', () => error(418, 'I am a teapot'), {
+		const app = new Elysia(options).get('/', () => error(418, 'I am a teapot'), {
 			response: {
 				200: t.String(),
 				418: t.String()
@@ -304,7 +307,7 @@ describe('Response Validator', () => {
 	})
 
 	it('use inline error from handler', async () => {
-		const app = new Elysia().get(
+		const app = new Elysia(options).get(
 			'/',
 			({ error }) => error(418, 'I am a teapot'),
 			{
@@ -317,7 +320,7 @@ describe('Response Validator', () => {
 	})
 
 	it('return null with schema', async () => {
-		const app = new Elysia().get('/', () => null, {
+		const app = new Elysia(options).get('/', () => null, {
 			response: t.Union([
 				t.Null(),
 				t.Object({
@@ -328,7 +331,7 @@ describe('Response Validator', () => {
 	})
 
 	it('return undefined with schema', async () => {
-		const app = new Elysia().get('/', () => undefined, {
+		const app = new Elysia(options).get('/', () => undefined, {
 			response: t.Union([
 				t.Undefined(),
 				t.Object({
@@ -339,7 +342,7 @@ describe('Response Validator', () => {
 	})
 
 	it('return void with schema', async () => {
-		const app = new Elysia().get('/', () => undefined, {
+		const app = new Elysia(options).get('/', () => undefined, {
 			response: t.Union([
 				t.Void(),
 				t.Object({
@@ -350,7 +353,7 @@ describe('Response Validator', () => {
 	})
 
 	it('return null with status based schema', async () => {
-		const app = new Elysia().get('/', () => undefined, {
+		const app = new Elysia(options).get('/', () => undefined, {
 			response: {
 				200: t.Union([
 					t.Void(),
@@ -364,7 +367,7 @@ describe('Response Validator', () => {
 	})
 
 	it('return static undefined with status based schema', async () => {
-		const app = new Elysia().get('/', undefined, {
+		const app = new Elysia(options).get('/', undefined, {
 			response: {
 				200: t.Union([
 					t.Void(),
@@ -378,7 +381,7 @@ describe('Response Validator', () => {
 	})
 
 	it('return error response with validator', async () => {
-		const app = new Elysia()
+		const app = new Elysia(options)
 			.get('/ok', ({ error }) => 'ok', {
 				response: {
 					200: t.String(),
